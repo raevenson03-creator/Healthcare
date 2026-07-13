@@ -6,3 +6,5 @@ export type { BadgeTone } from './Badge';
 export { Screen } from './Screen';
 export { TextField } from './TextField';
 export { SectionHeader } from './SectionHeader';
+export { GradientBackground } from './GradientBackground';
+export { FadeInView, PulseGlow } from './Animated';

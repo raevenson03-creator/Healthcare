@@ -20,11 +20,13 @@
       "package": "com.carebridge.health",
       "permissions": ["USE_BIOMETRIC", "USE_FINGERPRINT"]
     },
-    "plugins": ["expo-secure-store", "expo-local-authentication"],
+    "plugins": ["expo-secure-store", "expo-local-authentication", "expo-linear-gradient"],
     "extra": {
       "apiBaseUrl": "https://api.example-carebridge.com",
       "fhirBaseUrl": "https://fhir.example-carebridge.com/r4",
-      "sessionIdleTimeoutMs": 900000
+      "sessionIdleTimeoutMs": 900000,
+      "supabaseUrl": "",
+      "supabaseAnonKey": ""
     }
   }
 }

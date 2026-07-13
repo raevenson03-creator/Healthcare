@@ -94,6 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(async (reason: 'user' | 'timeout' = 'user') => {
     await audit(reason === 'timeout' ? 'auth.session.timeout' : 'auth.logout');
+    await authService.signOutSupabase();
     await clearAllSecureItems();
     setUser(null);
     setPendingUser(null);

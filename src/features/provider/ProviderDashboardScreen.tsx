@@ -2,12 +2,11 @@ import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { Badge, Card, Screen, SectionHeader, Text } from '@/components/ui';
+import { Badge, Card, FadeInView, Screen, SectionHeader, Text } from '@/components/ui';
 import { useTheme } from '@/theme/ThemeProvider';
 import { useAuth } from '@/store/AuthContext';
 import { useAsync } from '@/hooks/useAsync';
-import { getAppointments } from '@/services/clinical.service';
-import { mockPatient } from '@/services/mockData';
+import { getAppointments, getPatient } from '@/services/clinical.service';
 import { ProviderStackParamList } from '@/navigation/types';
 import { appointmentStatusTone, appointmentTypeLabel, calculateAge, formatDateTime } from '@/utils/format';
 
@@ -24,52 +23,62 @@ export function ProviderDashboardScreen() {
   const theme = useTheme();
   const { user } = useAuth();
   const navigation = useNavigation<Nav>();
-  // In production this queries the practitioner's schedule; demo reuses appts.
   const { data } = useAsync(() => getAppointments('patient-1'), []);
+  const patient = useAsync(() => getPatient('patient-1'), []);
 
   const today = (data ?? []).filter((a) => a.status !== 'cancelled');
+  const p = patient.data;
 
   return (
     <Screen>
-      <View>
-        <Text variant="heading">Good morning, {user?.displayName ?? 'Doctor'}</Text>
-        <Text tone="muted">You have {today.length} visits on today’s schedule.</Text>
-      </View>
+      <FadeInView>
+        <View>
+          <Text variant="heading">Good morning, {user?.displayName ?? 'Doctor'}</Text>
+          <Text tone="muted">You have {today.length} visits on today’s schedule.</Text>
+        </View>
+      </FadeInView>
 
-      <SectionHeader title="Task queue" />
+      <FadeInView delay={80}>
+        <SectionHeader title="Task queue" />
+      </FadeInView>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.md }}>
-        {TASK_QUEUE.map((t) => (
-          <Card key={t.id} style={{ flexBasis: '47%', flexGrow: 1 }}>
-            <Text variant="heading">{t.count}</Text>
-            <Text variant="caption" tone="muted">
-              {t.label}
-            </Text>
-          </Card>
+        {TASK_QUEUE.map((t, i) => (
+          <FadeInView key={t.id} delay={100 + i * 40} style={{ flexBasis: '47%', flexGrow: 1 }}>
+            <Card>
+              <Text variant="heading">{t.count}</Text>
+              <Text variant="caption" tone="muted">
+                {t.label}
+              </Text>
+            </Card>
+          </FadeInView>
         ))}
       </View>
 
-      <SectionHeader title="Today’s schedule" />
-      {today.map((a) => (
-        <Card
-          key={a.id}
-          onPress={() => navigation.navigate('PatientChart', { patientId: a.patientId })}
-          accessibilityLabel={`${mockPatient.name.given} ${mockPatient.name.family}, ${a.reason}, ${formatDateTime(a.start)}. Open chart.`}
-        >
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <View style={{ flex: 1, gap: 2 }}>
-              <Text variant="bodyLarge" weight="semibold">
-                {mockPatient.name.given} {mockPatient.name.family}
-              </Text>
-              <Text variant="caption" tone="muted">
-                {calculateAge(mockPatient.birthDate)} yrs · {a.reason}
-              </Text>
-              <Text variant="caption">
-                {formatDateTime(a.start)} · {appointmentTypeLabel(a.type)}
-              </Text>
+      <FadeInView delay={200}>
+        <SectionHeader title="Today’s schedule" />
+      </FadeInView>
+      {today.map((a, i) => (
+        <FadeInView key={a.id} delay={220 + i * 50}>
+          <Card
+            onPress={() => navigation.navigate('PatientChart', { patientId: a.patientId })}
+            accessibilityLabel={`${p?.name.given ?? ''} ${p?.name.family ?? ''}, ${a.reason}, ${formatDateTime(a.start)}. Open chart.`}
+          >
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text variant="bodyLarge" weight="semibold">
+                  {p ? `${p.name.given} ${p.name.family}` : 'Loading…'}
+                </Text>
+                <Text variant="caption" tone="muted">
+                  {p ? `${calculateAge(p.birthDate)} yrs · ${a.reason}` : a.reason}
+                </Text>
+                <Text variant="caption">
+                  {formatDateTime(a.start)} · {appointmentTypeLabel(a.type)}
+                </Text>
+              </View>
+              <Badge label={a.status} tone={appointmentStatusTone(a.status)} />
             </View>
-            <Badge label={a.status} tone={appointmentStatusTone(a.status)} />
-          </View>
-        </Card>
+          </Card>
+        </FadeInView>
       ))}
     </Screen>
   );

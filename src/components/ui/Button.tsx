@@ -1,8 +1,15 @@
-import { ActivityIndicator, Pressable, StyleSheet, ViewStyle } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, StyleSheet, ViewStyle } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from 'react-native-reanimated';
 
 import { useTheme } from '@/theme/ThemeProvider';
 import { MIN_TOUCH_TARGET } from '@/theme/tokens';
 import { Text } from './Text';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
@@ -29,6 +36,7 @@ export function Button({
 }: ButtonProps) {
   const theme = useTheme();
   const isDisabled = disabled || loading;
+  const scale = useSharedValue(1);
 
   const bg: Record<ButtonVariant, string> = {
     primary: theme.colors.primary,
@@ -43,36 +51,70 @@ export function Button({
     danger: 'onPrimary',
   };
 
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
   return (
-    <Pressable
+    <AnimatedPressable
       onPress={onPress}
       disabled={isDisabled}
       accessibilityRole="button"
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       accessibilityLabel={label}
       accessibilityHint={accessibilityHint}
-      style={({ pressed }) => [
+      onPressIn={() => {
+        if (!isDisabled) scale.value = withSpring(0.96, { damping: 15, stiffness: 400 });
+      }}
+      onPressOut={() => {
+        scale.value = withSpring(1, { damping: 12, stiffness: 300 });
+      }}
+      style={(state) => {
+        const { pressed } = state;
+        const hovered =
+          Platform.OS === 'web' &&
+          'hovered' in state &&
+          Boolean((state as { hovered?: boolean }).hovered);
+        return [
         styles.base,
+        animatedStyle,
         {
           backgroundColor: bg[variant],
           borderColor: variant === 'ghost' ? theme.colors.primary : 'transparent',
-          borderWidth: variant === 'ghost' ? 1 : 0,
+          borderWidth: variant === 'ghost' ? 1.5 : 0,
           borderRadius: theme.radius.md,
-          opacity: isDisabled ? 0.5 : pressed ? 0.85 : 1,
+          opacity: isDisabled ? 0.5 : 1,
           alignSelf: fullWidth ? 'stretch' : 'flex-start',
           paddingHorizontal: theme.spacing.lg,
+          ...(Platform.OS === 'web' && hovered && !isDisabled
+            ? {
+                transform: [{ scale: 1.02 }],
+                shadowColor: theme.colors.shadow,
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 1,
+                shadowRadius: 12,
+              }
+            : {}),
+          ...(pressed && !isDisabled ? { opacity: 0.88 } : {}),
         },
         style,
-      ]}
+        ];
+      }}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'secondary' || variant === 'ghost' ? theme.colors.primary : theme.colors.onPrimary} />
+        <ActivityIndicator
+          color={
+            variant === 'secondary' || variant === 'ghost'
+              ? theme.colors.primary
+              : theme.colors.onPrimary
+          }
+        />
       ) : (
         <Text variant="bodyLarge" weight="semibold" tone={fg[variant]}>
           {label}
         </Text>
       )}
-    </Pressable>
+    </AnimatedPressable>
   );
 }
 

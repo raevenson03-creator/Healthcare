@@ -5,9 +5,9 @@ A HIPAA-minded, accessibility-first healthcare mobile app foundation for **patie
 This repository is a working, extensible foundation that demonstrates the
 architecture, security posture, UX patterns, and core feature set described in
 the *Healthcare Mobile App Requirements Specification*. It runs end-to-end
-against a **synthetic (non-PHI) mock data layer** so you can explore the flows
-without a backend, while the service interfaces mirror the real FHIR/OAuth
-contracts so the mock can be swapped for live systems with minimal UI changes.
+against a **Supabase (Postgres) database** when configured, with an in-memory
+mock fallback so you can explore flows without a backend. See `supabase/README.md`
+for setup. Service interfaces mirror FHIR/OAuth contracts for production swaps.
 
 > ⚠️ **Not for production use as-is.** Several controls (TLS certificate
 > pinning, real OAuth2/OIDC, EHR/Surescripts integration, server-side audit

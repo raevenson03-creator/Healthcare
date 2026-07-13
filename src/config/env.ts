@@ -4,6 +4,8 @@ type Extra = {
   apiBaseUrl?: string;
   fhirBaseUrl?: string;
   sessionIdleTimeoutMs?: number;
+  supabaseUrl?: string;
+  supabaseAnonKey?: string;
 };
 
 const extra = (Constants.expoConfig?.extra ?? {}) as Extra;
@@ -18,6 +20,10 @@ const extra = (Constants.expoConfig?.extra ?? {}) as Extra;
 export const env = {
   apiBaseUrl: extra.apiBaseUrl ?? 'https://api.example-carebridge.com',
   fhirBaseUrl: extra.fhirBaseUrl ?? 'https://fhir.example-carebridge.com/r4',
+  /** Public Supabase project URL (safe in client bundle). */
+  supabaseUrl: extra.supabaseUrl,
+  /** Public Supabase anon key (safe in client bundle — protected by RLS). */
+  supabaseAnonKey: extra.supabaseAnonKey,
   /** HIPAA automatic logoff: 15 minutes of inactivity (spec 1.1). */
   sessionIdleTimeoutMs: extra.sessionIdleTimeoutMs ?? 15 * 60 * 1000,
   /** Absolute session cap regardless of activity (spec 13.2): 8 hours. */
