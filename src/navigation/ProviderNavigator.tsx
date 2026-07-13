@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -36,41 +37,41 @@ export function ProviderNavigator() {
   const theme = useTheme();
   return (
     <Tab.Navigator
-      screenOptions={{
+      screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textMuted,
-        tabBarStyle: { backgroundColor: theme.colors.surface, borderTopColor: theme.colors.border },
-      }}
+        tabBarStyle: {
+          backgroundColor: theme.isDark ? theme.colors.surfaceAlt : '#E8EFED',
+          borderTopColor: theme.colors.primary,
+          borderTopWidth: 2,
+          height: Platform.OS === 'ios' ? 88 : 64,
+          paddingTop: 8,
+          paddingBottom: Platform.OS === 'ios' ? 28 : 8,
+        },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '700', letterSpacing: 0.3 },
+        tabBarIcon: ({ color, size, focused }) => {
+          const icons = {
+            Today: 'medkit' as const,
+            Schedule: 'calendar' as const,
+            Messages: 'chatbubbles' as const,
+            More: 'settings' as const,
+          };
+          return (
+            <TabBarIcon
+              name={icons[route.name as keyof typeof icons]}
+              color={color}
+              size={size}
+              focused={focused}
+            />
+          );
+        },
+      })}
     >
-      <Tab.Screen
-        name="Today"
-        component={TodayNavigator}
-        options={{
-          tabBarIcon: ({ color, size }) => <TabBarIcon symbol="🩺" color={color} size={size} />,
-        }}
-      />
-      <Tab.Screen
-        name="Schedule"
-        component={ProviderScheduleScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => <TabBarIcon symbol="📅" color={color} size={size} />,
-        }}
-      />
-      <Tab.Screen
-        name="Messages"
-        component={MessagesScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => <TabBarIcon symbol="💬" color={color} size={size} />,
-        }}
-      />
-      <Tab.Screen
-        name="More"
-        component={MoreScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => <TabBarIcon symbol="⚙️" color={color} size={size} />,
-        }}
-      />
+      <Tab.Screen name="Today" component={TodayNavigator} options={{ title: 'Clinical' }} />
+      <Tab.Screen name="Schedule" component={ProviderScheduleScreen} />
+      <Tab.Screen name="Messages" component={MessagesScreen} />
+      <Tab.Screen name="More" component={MoreScreen} />
     </Tab.Navigator>
   );
 }

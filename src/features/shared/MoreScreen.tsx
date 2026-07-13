@@ -43,8 +43,12 @@ export function MoreScreen() {
       <Card>
         <Text variant="title">{user?.displayName}</Text>
         <Text tone="muted">{user?.email}</Text>
-        <View style={{ flexDirection: 'row', gap: theme.spacing.sm, marginTop: theme.spacing.sm }}>
-          <Badge label={user?.role ?? 'user'} tone="info" />
+        <View style={{ flexDirection: 'row', gap: theme.spacing.sm, marginTop: theme.spacing.sm, flexWrap: 'wrap' }}>
+          <Badge
+            label={theme.persona === 'provider' ? 'Clinical staff' : 'Patient member'}
+            tone="info"
+          />
+          <Badge label={user?.role ?? 'user'} tone="neutral" />
           {user?.mfaEnrolled ? <Badge label="MFA on" tone="success" /> : <Badge label="MFA off" tone="warning" />}
         </View>
       </Card>

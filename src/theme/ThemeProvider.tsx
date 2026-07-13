@@ -3,6 +3,7 @@ import { useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { ColorTokens, darkColors, highContrastColors, lightColors } from './palette';
+import { Persona } from './personas';
 import { fontSizes, fontWeights, radius, spacing } from './tokens';
 
 export type ThemeMode = 'system' | 'light' | 'dark' | 'highContrast';
@@ -24,16 +25,18 @@ export type Theme = {
   /** Font sizes already multiplied by the active fontScale. */
   fontSizes: typeof fontSizes;
   isDark: boolean;
+  /** Active UI persona when signed in; null on auth screens. */
+  persona: Persona | null;
 };
 
-type ThemeContextValue = Theme & {
+export type ThemeContextValue = Theme & {
   mode: ThemeMode;
   fontScale: number;
   setMode: (mode: ThemeMode) => void;
   setFontScale: (scale: number) => void;
 };
 
-const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
+export const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 function scaleFontSizes(scale: number): typeof fontSizes {
   const clamped = Math.max(1, Math.min(2, scale));
@@ -87,6 +90,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       fontWeights,
       fontSizes: scaleFontSizes(prefs.fontScale),
       isDark: resolvedMode !== 'light',
+      persona: null,
       mode: prefs.mode,
       fontScale: prefs.fontScale,
       setMode,
@@ -97,8 +101,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
-export function useTheme(): ThemeContextValue {
+/** Base theme before persona overrides (used by PersonaThemeProvider). */
+export function useThemeBase(): ThemeContextValue {
   const ctx = useContext(ThemeContext);
   if (!ctx) throw new Error('useTheme must be used within a ThemeProvider');
   return ctx;
+}
+
+export function useTheme(): ThemeContextValue {
+  return useThemeBase();
 }

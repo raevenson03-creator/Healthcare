@@ -2,7 +2,7 @@ import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-import { Badge, Card, FadeInView, Screen, SectionHeader, Text } from '@/components/ui';
+import { Badge, Card, FadeInView, PersonaHeader, Screen, SectionHeader, Text } from '@/components/ui';
 import { useTheme } from '@/theme/ThemeProvider';
 import { useAuth } from '@/store/AuthContext';
 import { useAsync } from '@/hooks/useAsync';
@@ -32,10 +32,10 @@ export function ProviderDashboardScreen() {
   return (
     <Screen>
       <FadeInView>
-        <View>
-          <Text variant="heading">Good morning, {user?.displayName ?? 'Doctor'}</Text>
-          <Text tone="muted">You have {today.length} visits on today’s schedule.</Text>
-        </View>
+        <PersonaHeader
+          greeting={`Good morning, ${user?.displayName ?? 'Doctor'}`}
+          subtitle={`${today.length} visits scheduled · ${TASK_QUEUE.reduce((n, t) => n + t.count, 0)} items in your queue`}
+        />
       </FadeInView>
 
       <FadeInView delay={80}>
@@ -44,7 +44,17 @@ export function ProviderDashboardScreen() {
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.md }}>
         {TASK_QUEUE.map((t, i) => (
           <FadeInView key={t.id} delay={100 + i * 40} style={{ flexBasis: '47%', flexGrow: 1 }}>
-            <Card>
+            <Card
+              style={{
+                borderLeftWidth: 4,
+                borderLeftColor:
+                  t.tone === 'danger'
+                    ? theme.colors.danger
+                    : t.tone === 'warning'
+                      ? theme.colors.warning
+                      : theme.colors.primary,
+              }}
+            >
               <Text variant="heading">{t.count}</Text>
               <Text variant="caption" tone="muted">
                 {t.label}

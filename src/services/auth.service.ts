@@ -108,3 +108,47 @@ export async function signOutSupabase(): Promise<void> {
     await getSupabase().auth.signOut();
   }
 }
+
+export interface SignUpInput {
+  email: string;
+  password: string;
+  role: 'patient' | 'provider';
+  displayName: string;
+}
+
+export async function signUp({ email, password, role, displayName }: SignUpInput): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error('Registration requires Supabase. Configure supabaseUrl and supabaseAnonKey in app.json.');
+  }
+
+  const supabase = getSupabase();
+  const normalized = email.trim().toLowerCase();
+  const profileRole = role === 'provider' ? 'physician' : 'patient';
+
+  const { data, error } = await supabase.auth.signUp({ email: normalized, password });
+  if (error || !data.user) {
+    await audit('auth.signup.failure', { detail: `email=${normalized}` });
+    throw new Error(error?.message ?? 'Could not create account.');
+  }
+
+  const fhirRef =
+    role === 'patient'
+      ? `patient-${data.user.id.slice(0, 8)}`
+      : `practitioner-${data.user.id.slice(0, 8)}`;
+
+  const { error: profileError } = await supabase.from('profiles').insert({
+    id: data.user.id,
+    email: normalized,
+    role: profileRole,
+    display_name: displayName,
+    fhir_reference: fhirRef,
+    mfa_enrolled: true,
+  });
+
+  if (profileError) {
+    await audit('auth.signup.failure', { detail: `profile=${profileError.message}` });
+    throw new Error('Account created but profile setup failed. Contact support.');
+  }
+
+  await audit('auth.signup.success', { resource: `User/${data.user.id}` });
+}

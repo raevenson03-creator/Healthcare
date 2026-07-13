@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
@@ -72,51 +73,52 @@ export function PatientNavigator() {
   const theme = useTheme();
   return (
     <Tab.Navigator
-      screenOptions={{
+      screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textMuted,
-        tabBarStyle: { backgroundColor: theme.colors.surface, borderTopColor: theme.colors.border },
-        tabBarLabelStyle: { fontSize: 12 },
-      }}
+        tabBarStyle: {
+          backgroundColor: theme.colors.surface,
+          borderTopColor: theme.colors.border,
+          borderTopWidth: 1,
+          height: Platform.OS === 'ios' ? 88 : 64,
+          paddingTop: 8,
+          paddingBottom: Platform.OS === 'ios' ? 28 : 8,
+          ...(Platform.OS === 'web'
+            ? { boxShadow: `0 -4px 20px ${theme.colors.shadow}` }
+            : {
+                shadowColor: theme.colors.shadow,
+                shadowOffset: { width: 0, height: -4 },
+                shadowOpacity: 0.12,
+                shadowRadius: 12,
+                elevation: 8,
+              }),
+        },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+        tabBarIcon: ({ color, size, focused }) => {
+          const icons = {
+            Dashboard: 'home' as const,
+            Appointments: 'calendar' as const,
+            Records: 'folder-open' as const,
+            Messages: 'chatbubbles' as const,
+            More: 'settings' as const,
+          };
+          return (
+            <TabBarIcon
+              name={icons[route.name as keyof typeof icons]}
+              color={color}
+              size={size}
+              focused={focused}
+            />
+          );
+        },
+      })}
     >
-      <Tab.Screen
-        name="Dashboard"
-        component={DashboardScreen}
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color, size }) => <TabBarIcon symbol="🏠" color={color} size={size} />,
-        }}
-      />
-      <Tab.Screen
-        name="Appointments"
-        component={AppointmentsNavigator}
-        options={{
-          tabBarIcon: ({ color, size }) => <TabBarIcon symbol="📅" color={color} size={size} />,
-        }}
-      />
-      <Tab.Screen
-        name="Records"
-        component={RecordsNavigator}
-        options={{
-          title: 'Records',
-          tabBarIcon: ({ color, size }) => <TabBarIcon symbol="📋" color={color} size={size} />,
-        }}
-      />
-      <Tab.Screen
-        name="Messages"
-        component={MessagesScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => <TabBarIcon symbol="💬" color={color} size={size} />,
-        }}
-      />
-      <Tab.Screen
-        name="More"
-        component={MoreScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => <TabBarIcon symbol="⚙️" color={color} size={size} />,
-        }}
-      />
+      <Tab.Screen name="Dashboard" component={DashboardScreen} options={{ title: 'Home' }} />
+      <Tab.Screen name="Appointments" component={AppointmentsNavigator} options={{ title: 'Visits' }} />
+      <Tab.Screen name="Records" component={RecordsNavigator} options={{ title: 'Records' }} />
+      <Tab.Screen name="Messages" component={MessagesScreen} />
+      <Tab.Screen name="More" component={MoreScreen} />
     </Tab.Navigator>
   );
 }

@@ -24,6 +24,7 @@ interface AuthContextValue {
   status: AuthStatus;
   user: AuthUser | null;
   signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, role: 'patient' | 'provider', displayName: string) => Promise<void>;
   confirmMfa: (code: string) => Promise<void>;
   signOut: (reason?: 'user' | 'timeout') => Promise<void>;
 }
@@ -79,6 +80,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [persistActor],
   );
 
+  const signUp = useCallback(
+    async (email: string, password: string, role: 'patient' | 'provider', displayName: string) => {
+      await authService.signUp({ email, password, role, displayName });
+    },
+    [],
+  );
+
   const confirmMfa = useCallback(
     async (code: string) => {
       if (!pendingUser) throw new Error('No pending MFA challenge.');
@@ -102,8 +110,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ status, user, signIn, confirmMfa, signOut }),
-    [status, user, signIn, confirmMfa, signOut],
+    () => ({ status, user, signIn, signUp, confirmMfa, signOut }),
+    [status, user, signIn, signUp, confirmMfa, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

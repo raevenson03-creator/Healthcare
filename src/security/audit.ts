@@ -16,6 +16,8 @@ import { getSecureItem } from './secureStorage';
 export type AuditAction =
   | 'auth.login.success'
   | 'auth.login.failure'
+  | 'auth.signup.success'
+  | 'auth.signup.failure'
   | 'auth.logout'
   | 'auth.mfa.challenge'
   | 'auth.session.timeout'

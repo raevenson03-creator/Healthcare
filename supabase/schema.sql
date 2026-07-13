@@ -144,6 +144,9 @@ ALTER TABLE message_threads ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "profiles_select_own" ON profiles
   FOR SELECT TO authenticated USING (auth.uid() = id);
 
+CREATE POLICY "profiles_insert_own" ON profiles
+  FOR INSERT TO authenticated WITH CHECK (auth.uid() = id);
+
 CREATE POLICY "clinical_select_authenticated" ON patients
   FOR SELECT TO authenticated USING (true);
 CREATE POLICY "clinical_select_authenticated_practitioners" ON practitioners

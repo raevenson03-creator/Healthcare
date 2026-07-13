@@ -1,14 +1,28 @@
-import { Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 /**
- * Lightweight emoji-based tab icon to avoid pulling an icon font dependency.
- * Marked accessibility-hidden because the tab already exposes a text label to
- * screen readers.
+ * Persona-aware tab icon using Ionicons. Hidden from screen readers because
+ * the tab bar already exposes a text label.
  */
-export function TabBarIcon({ symbol, color, size }: { symbol: string; color: string; size: number }) {
+export function TabBarIcon({
+  name,
+  color,
+  size,
+  focused,
+}: {
+  name: keyof typeof Ionicons.glyphMap;
+  color: string;
+  size: number;
+  focused: boolean;
+}) {
+  const iconName = focused ? name : (`${name}-outline` as keyof typeof Ionicons.glyphMap);
   return (
-    <Text accessibilityElementsHidden importantForAccessibility="no" style={{ fontSize: size * 0.9, color }}>
-      {symbol}
-    </Text>
+    <Ionicons
+      name={iconName}
+      size={size}
+      color={color}
+      accessibilityElementsHidden
+      importantForAccessibility="no"
+    />
   );
 }

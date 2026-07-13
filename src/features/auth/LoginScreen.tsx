@@ -1,19 +1,36 @@
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 
-import { Button, Card, FadeInView, PulseGlow, Screen, Text, TextField } from '@/components/ui';
+import {
+  Button,
+  Card,
+  FadeInView,
+  PulseGlow,
+  RoleOptionCard,
+  Screen,
+  Text,
+  TextField,
+} from '@/components/ui';
+import type { DemoRole } from '@/components/ui/RoleOptionCard';
 import { useTheme } from '@/theme/ThemeProvider';
 import { useAuth } from '@/store/AuthContext';
 import { authenticateWithBiometrics, isBiometricAvailable } from '@/security/biometrics';
 import { DEMO_CREDENTIALS } from '@/services/mockData';
 import { isSupabaseConfigured } from '@/lib/supabase';
+import { AuthStackParamList } from '@/navigation/types';
+
+type Nav = NativeStackNavigationProp<AuthStackParamList, 'Login'>;
 
 export function LoginScreen() {
   const theme = useTheme();
+  const navigation = useNavigation<Nav>();
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [selectedRole, setSelectedRole] = useState<DemoRole | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -37,19 +54,22 @@ export function LoginScreen() {
     }
     const ok = await authenticateWithBiometrics('Sign in to CareBridge');
     if (ok) {
+      fillDemo('patient');
       await signIn(DEMO_CREDENTIALS.patient.email, DEMO_CREDENTIALS.patient.password);
     }
   };
 
-  const fillDemo = (role: 'patient' | 'provider') => {
+  const fillDemo = (role: DemoRole) => {
+    setSelectedRole(role);
     setEmail(DEMO_CREDENTIALS[role].email);
     setPassword(DEMO_CREDENTIALS[role].password);
+    setError(null);
   };
 
   return (
     <Screen variant="hero">
       <FadeInView delay={0}>
-        <View style={{ alignItems: 'center', marginVertical: theme.spacing.xl, position: 'relative' }}>
+        <View style={{ alignItems: 'center', marginVertical: theme.spacing.lg, position: 'relative' }}>
           <PulseGlow color={theme.colors.onPrimary} size={160} />
           <LinearGradient
             colors={[theme.colors.onPrimary, theme.colors.accent]}
@@ -73,7 +93,7 @@ export function LoginScreen() {
       </FadeInView>
 
       <FadeInView delay={80}>
-        <Card elevated style={{ borderColor: 'transparent' }}>
+        <Card elevated={false} style={{ backgroundColor: theme.colors.surface }}>
           <View style={{ gap: theme.spacing.lg }}>
             <Text variant="title">Sign in</Text>
             <TextField
@@ -98,41 +118,75 @@ export function LoginScreen() {
                 {error}
               </Text>
             ) : null}
-            <Button
-              label="Sign in"
-              onPress={onSubmit}
-              loading={submitting}
-              accessibilityHint="Signs you in and starts multi-factor verification"
-            />
-            <Button label="Use Face ID / Touch ID" variant="ghost" onPress={onBiometric} />
+
+            <View style={{ gap: theme.spacing.sm }}>
+              <Button
+                label="Sign in"
+                onPress={onSubmit}
+                loading={submitting}
+                variant="primary"
+                accessibilityHint="Signs you in and starts multi-factor verification"
+              />
+              <Button
+                label="Create account"
+                onPress={() => navigation.navigate('SignUp')}
+                variant="outline"
+                accessibilityHint="Opens registration to create a new account"
+              />
+            </View>
+
+            <Pressable onPress={onBiometric} accessibilityRole="link" accessibilityLabel="Use Face ID or Touch ID">
+              <Text tone="primary" weight="medium" style={{ textAlign: 'center' }}>
+                Use Face ID / Touch ID
+              </Text>
+            </Pressable>
           </View>
         </Card>
       </FadeInView>
 
       <FadeInView delay={160}>
-        <Card elevated style={{ marginTop: theme.spacing.md }}>
-          <Text variant="body" weight="semibold">
-            Demo accounts
-          </Text>
-          <Text variant="caption" tone="muted" style={{ marginBottom: theme.spacing.sm }}>
-            Tap to autofill (synthetic data only — no real PHI).
-            {isSupabaseConfigured() ? ' Connected to Supabase.' : ' Using local mock data.'}
-          </Text>
-          <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
-            <Button
-              label="Patient"
-              variant="secondary"
-              fullWidth={false}
-              onPress={() => fillDemo('patient')}
-              style={{ flex: 1 }}
-            />
-            <Button
-              label="Provider"
-              variant="secondary"
-              fullWidth={false}
-              onPress={() => fillDemo('provider')}
-              style={{ flex: 1 }}
-            />
+        <Card elevated={false} style={{ marginTop: theme.spacing.md, backgroundColor: theme.colors.surface }}>
+          <View style={{ gap: theme.spacing.md }}>
+            <View>
+              <Text variant="body" weight="bold">
+                Quick access
+              </Text>
+              <Text variant="caption" tone="muted">
+                Select a portal to autofill demo credentials (synthetic data only).
+                {isSupabaseConfigured() ? ' Connected to Supabase.' : ' Using local mock data.'}
+              </Text>
+            </View>
+
+            <View style={{ flexDirection: 'row', gap: theme.spacing.sm }}>
+              <RoleOptionCard
+                role="patient"
+                selected={selectedRole === 'patient'}
+                onPress={() => fillDemo('patient')}
+              />
+              <RoleOptionCard
+                role="provider"
+                selected={selectedRole === 'provider'}
+                onPress={() => fillDemo('provider')}
+              />
+            </View>
+
+            {selectedRole ? (
+              <View
+                style={{
+                  backgroundColor: theme.colors.primaryMuted,
+                  borderRadius: theme.radius.md,
+                  padding: theme.spacing.md,
+                  gap: 2,
+                }}
+              >
+                <Text variant="caption" weight="semibold" tone="primary">
+                  Demo credentials loaded
+                </Text>
+                <Text variant="caption" tone="muted">
+                  {DEMO_CREDENTIALS[selectedRole].email}
+                </Text>
+              </View>
+            ) : null}
           </View>
         </Card>
       </FadeInView>

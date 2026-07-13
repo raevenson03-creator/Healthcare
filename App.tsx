@@ -3,6 +3,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
 import { ThemeProvider } from '@/theme/ThemeProvider';
+import { PersonaThemeProvider } from '@/theme/PersonaThemeProvider';
 import { AuthProvider } from '@/store/AuthContext';
 import { SessionProvider } from '@/store/SessionContext';
 import { RootNavigator } from '@/navigation/RootNavigator';
@@ -13,10 +14,12 @@ export default function App() {
       <SafeAreaProvider>
         <ThemeProvider>
           <AuthProvider>
-            <SessionProvider>
-              <StatusBar style="auto" />
-              <RootNavigator />
-            </SessionProvider>
+            <PersonaThemeProvider>
+              <SessionProvider>
+                <StatusBar style="auto" />
+                <RootNavigator />
+              </SessionProvider>
+            </PersonaThemeProvider>
           </AuthProvider>
         </ThemeProvider>
       </SafeAreaProvider>

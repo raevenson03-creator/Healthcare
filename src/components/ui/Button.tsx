@@ -1,4 +1,4 @@
-import { ActivityIndicator, Platform, Pressable, StyleSheet, ViewStyle } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, StyleSheet, View, ViewStyle } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -11,7 +11,7 @@ import { Text } from './Text';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline';
 
 export interface ButtonProps {
   label: string;
@@ -43,12 +43,21 @@ export function Button({
     secondary: theme.colors.surfaceAlt,
     ghost: 'transparent',
     danger: theme.colors.danger,
+    outline: theme.colors.surface,
   };
   const fg: Record<ButtonVariant, 'onPrimary' | 'default' | 'primary'> = {
     primary: 'onPrimary',
     secondary: 'default',
     ghost: 'primary',
     danger: 'onPrimary',
+    outline: 'primary',
+  };
+  const border: Record<ButtonVariant, ViewStyle> = {
+    primary: { borderWidth: 0 },
+    secondary: { borderWidth: 0 },
+    ghost: { borderWidth: 1.5, borderColor: theme.colors.primary },
+    danger: { borderWidth: 0 },
+    outline: { borderWidth: 2, borderColor: theme.colors.primary },
   };
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -76,49 +85,61 @@ export function Button({
           'hovered' in state &&
           Boolean((state as { hovered?: boolean }).hovered);
         return [
-        styles.base,
-        animatedStyle,
-        {
-          backgroundColor: bg[variant],
-          borderColor: variant === 'ghost' ? theme.colors.primary : 'transparent',
-          borderWidth: variant === 'ghost' ? 1.5 : 0,
-          borderRadius: theme.radius.md,
-          opacity: isDisabled ? 0.5 : 1,
-          alignSelf: fullWidth ? 'stretch' : 'flex-start',
-          paddingHorizontal: theme.spacing.lg,
-          ...(Platform.OS === 'web' && hovered && !isDisabled
-            ? {
-                transform: [{ scale: 1.02 }],
-                shadowColor: theme.colors.shadow,
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 1,
-                shadowRadius: 12,
-              }
-            : {}),
-          ...(pressed && !isDisabled ? { opacity: 0.88 } : {}),
-        },
-        style,
+          styles.wrapper,
+          animatedStyle,
+          {
+            alignSelf: fullWidth ? 'stretch' : 'flex-start',
+            opacity: isDisabled ? 0.5 : pressed ? 0.92 : 1,
+            ...(Platform.OS === 'web' && hovered && !isDisabled
+              ? { transform: [{ scale: 1.02 }] }
+              : {}),
+          },
+          style,
         ];
       }}
     >
-      {loading ? (
-        <ActivityIndicator
-          color={
-            variant === 'secondary' || variant === 'ghost'
-              ? theme.colors.primary
-              : theme.colors.onPrimary
-          }
-        />
-      ) : (
-        <Text variant="bodyLarge" weight="semibold" tone={fg[variant]}>
-          {label}
-        </Text>
-      )}
+      <View
+        style={[
+          styles.base,
+          {
+            backgroundColor: bg[variant],
+            borderRadius: theme.radius.md,
+            paddingHorizontal: theme.spacing.lg,
+            ...border[variant],
+            ...(variant === 'primary'
+              ? {
+                  shadowColor: theme.colors.primary,
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.35,
+                  shadowRadius: 8,
+                  elevation: 4,
+                }
+              : {}),
+          },
+        ]}
+      >
+        {loading ? (
+          <ActivityIndicator
+            color={
+              variant === 'secondary' || variant === 'ghost' || variant === 'outline'
+                ? theme.colors.primary
+                : theme.colors.onPrimary
+            }
+          />
+        ) : (
+          <Text variant="bodyLarge" weight="semibold" tone={fg[variant]}>
+            {label}
+          </Text>
+        )}
+      </View>
     </AnimatedPressable>
   );
 }
 
 const styles = StyleSheet.create({
+  wrapper: {
+    overflow: 'visible',
+  },
   base: {
     minHeight: MIN_TOUCH_TARGET,
     alignItems: 'center',

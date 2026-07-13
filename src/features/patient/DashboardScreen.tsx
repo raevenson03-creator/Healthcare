@@ -2,7 +2,7 @@ import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 
-import { Badge, Button, Card, FadeInView, Screen, SectionHeader, Text } from '@/components/ui';
+import { Badge, Button, Card, FadeInView, PersonaHeader, Screen, SectionHeader, Text } from '@/components/ui';
 import { useTheme } from '@/theme/ThemeProvider';
 import { useAuth } from '@/store/AuthContext';
 import { useAsync } from '@/hooks/useAsync';
@@ -33,10 +33,10 @@ export function DashboardScreen() {
   return (
     <Screen>
       <FadeInView delay={0}>
-        <View>
-          <Text variant="heading">Hello, {user?.displayName?.split(' ')[0] ?? 'there'}</Text>
-          <Text tone="muted">Here’s your health at a glance.</Text>
-        </View>
+        <PersonaHeader
+          greeting={`Hello, ${user?.displayName?.split(' ')[0] ?? 'there'}`}
+          subtitle="Here’s your health at a glance — appointments, meds, and results."
+        />
       </FadeInView>
 
       <FadeInView delay={60}>
