@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "CareBridge Health",
+    "slug": "carebridge-health",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "carebridge",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.carebridge.health",
+      "infoPlist": {
+        "NSFaceIDUsageDescription": "CareBridge uses Face ID to securely unlock your protected health information.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.carebridge.health",
+      "permissions": ["USE_BIOMETRIC", "USE_FINGERPRINT"]
+    },
+    "plugins": ["expo-secure-store", "expo-local-authentication"],
+    "extra": {
+      "apiBaseUrl": "https://api.example-carebridge.com",
+      "fhirBaseUrl": "https://fhir.example-carebridge.com/r4",
+      "sessionIdleTimeoutMs": 900000,
+      "supabaseUrl": "",
+      "supabaseAnonKey": ""
+    }
+  }
+}
